@@ -31,103 +31,104 @@
 </div>
 
 <script>
-const categories=["飛行場","オイルリグ","客船","ヒューメイン","アーティファクト","パシフィック","ユニオン"];
+<!-- <script> の直前に Firebase SDK を読み込みます -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-// 1. ページ読み込み時に localStorage から保存されたデータを取得（なければ空）
-const savedTimes = localStorage.getItem("crime_cooltimes");
-const times = savedTimes ? JSON.parse(savedTimes) : {};
+<script>
+// 1. Firebaseの初期化（※ご自身のプロジェクト設定情報に置き換えてください）
+const firebaseConfig = {
+  apiKey: "AIzaSyBLSPd2ytS4Qtj37Kbu7Lib3QvwC5hYKEY",
+  authDomain: "crime-cooltime.firebaseapp.com",
+  projectId: "crime-cooltime",
+  storageBucket: "crime-cooltime.firebasestorage.app",
+  messagingSenderId: "192334293714",
+  appId: "1:192334293714:web:129619c62e6876c4419b0b",
+  measurementId: "G-70TY410B11"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-let current="飛行場";
-const tabs=document.getElementById("tabs");
-const input=document.getElementById("time");
-const result=document.getElementById("result");
-const countdown=document.getElementById("countdown");
-const rows=document.getElementById("rows");
+const categories = ["飛行場","オイルリグ","客船","ヒューメイン","アーティファクト","パシフィック","ユニオン"];
+let times = {};
+let current = "飛行場";
 
-categories.forEach((name,i)=>{
-  const b=document.createElement("button");
-  b.className="tab"+(i===0?" active":"");
-  b.textContent=name;
-  b.onclick=()=>{
-    if(input.value) {
-      times[current]=input.value;
-      saveData(); // 切り替え時にも保存
+const tabs = document.getElementById("tabs");
+const input = document.getElementById("time");
+const result = document.getElementById("result");
+const countdown = document.getElementById("countdown");
+const rows = document.getElementById("rows");
+
+// 2. データベースの更新をリアルタイム監視（他の人が編集したら即時反映）
+db.ref("crime_cooltimes").on("value", (snapshot) => {
+  times = snapshot.val() || {};
+  if (times[current]) {
+    input.value = times[current];
+  }
+  calculate();
+  render();
+});
+
+// 3. データをクラウドに保存する関数
+function saveData() {
+  db.ref("crime_cooltimes").set(times);
+}
+
+// タブ生成処理
+categories.forEach((name, i) => {
+  const b = document.createElement("button");
+  b.className = "tab" + (i === 0 ? " active" : "");
+  b.textContent = name;
+  b.onclick = () => {
+    if (input.value) {
+      times[current] = input.value;
+      saveData();
     }
-    current=name;
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    current = name;
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
     b.classList.add("active");
-    input.value=times[current]||"";
+    input.value = times[current] || "";
     calculate();
     render();
   };
   tabs.appendChild(b);
 });
 
-// 2. localStorage にデータを保存する関数を追加
-function saveData() {
-  localStorage.setItem("crime_cooltimes", JSON.stringify(times));
+// 時間計算関数（既存のまま）
+function add4h(t) { /* ...既存のコード... */ }
+function nextTarget(t) { /* ...既存のコード... */ }
+function remaining(t) { /* ...既存のコード... */ }
+
+function calculate() {
+  result.textContent = add4h(input.value) || "--:--";
+  countdown.textContent = input.value ? "残り時間：" + remaining(input.value) : "残り時間：--:--:--";
 }
 
-function add4h(t){
-  if(!t) return "";
-  const [h,m]=t.split(":").map(Number);
-  const total=(h*60+m+240)%(24*60);
-  return String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0");
-}
-
-function nextTarget(t){
-  const [h,m]=t.split(":").map(Number);
-  const now=new Date();
-  let target=new Date(now);
-  target.setHours(h,m,0,0);
-  if(target<=now) target.setDate(target.getDate()+1);
-  return target;
-}
-
-function remaining(t){
-  if(!t) return "--:--:--";
-  let ms=nextTarget(add4h(t))-new Date();
-  if(ms<0) ms=0;
-  const s=Math.floor(ms/1000);
-  return String(Math.floor(s/3600)).padStart(2,"0")+":"+String(Math.floor(s%3600/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-}
-
-function calculate(){
-  result.textContent=add4h(input.value)||"--:--";
-  countdown.textContent=input.value ? "残り時間："+remaining(input.value) : "残り時間：--:--:--";
-}
-
-function render(){
-  rows.innerHTML="";
-  categories.forEach(name=>{
-    const t=times[name];
-    const row=document.createElement("div");
-    row.className="row";
-    row.innerHTML=`<div class="name">${name}</div>
-    <div class="time">${t||'<span class="empty">未設定</span>'}</div>
-    <div class="after">${t?add4h(t):'<span class="empty">--:--</span>'}</div>
-    <div class="remaining">${t?remaining(t):'<span class="empty">--:--:--</span>'}</div>`;
+function render() {
+  rows.innerHTML = "";
+  categories.forEach(name => {
+    const t = times[name];
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `<div class="name">${name}</div>
+    <div class="time">${t || '<span class="empty">未設定</span>'}</div>
+    <div class="after">${t ? add4h(t) : '<span class="empty">--:--</span>'}</div>
+    <div class="remaining">${t ? remaining(t) : '<span class="empty">--:--:--</span>'}</div>`;
     rows.appendChild(row);
   });
 }
 
-// 3. 入力があった時に saveData() を実行して即座に保存
-input.addEventListener("input",()=>{
-  times[current]=input.value;
+// 入力イベント（変更時にクラウドへ同期）
+input.addEventListener("input", () => {
+  times[current] = input.value;
   saveData();
-  calculate();
-  render();
 });
 
-setInterval(()=>{
+setInterval(() => {
   calculate();
   render();
-},1000);
-
-// 初期化時に最初のタブの入力欄をセット
-input.value = times[current] || "";
-calculate();
-render();
+}, 1000);
+</script>
 </script>
 </body>
 </html>

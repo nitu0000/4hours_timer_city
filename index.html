@@ -95,9 +95,29 @@ categories.forEach((name, i) => {
 });
 
 // 時間計算関数（既存のまま）
-function add4h(t) { /* ...既存のコード... */ }
-function nextTarget(t) { /* ...既存のコード... */ }
-function remaining(t) { /* ...既存のコード... */ }
+function add4h(t){
+ if(!t) return "";
+ const [h,m]=t.split(":").map(Number);
+ const total=(h*60+m+240)%(24*60);
+ return String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0");
+}
+
+function nextTarget(t){
+ const [h,m]=t.split(":").map(Number);
+ const now=new Date();
+ let target=new Date(now);
+ target.setHours(h,m,0,0);
+ if(target<=now) target.setDate(target.getDate()+1);
+ return target;
+}
+
+function remaining(t){
+ if(!t) return "--:--:--";
+ let ms=nextTarget(add4h(t))-new Date();
+ if(ms<0) ms=0;
+ const s=Math.floor(ms/1000);
+ return String(Math.floor(s/3600)).padStart(2,"0")+":"+String(Math.floor(s%3600/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+}
 
 function calculate() {
   result.textContent = add4h(input.value) || "--:--";

@@ -4,62 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>受注開始時刻・クールタイム計算</title>
-<link rel="stylesheet" href="style1.css">
-<style>
-/* 備考入力等のスタイル */
-.input-field {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.input-field label {
-  font-size: 0.9em;
-  font-weight: bold;
-}
-.input-field input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* 一覧表のレイアウト調整（4列構成） */
-.list .row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr 1.5fr;
-  gap: 8px;
-  align-items: center;
-}
-
-/* 準備完了（0秒到達時）のスタイル強調 */
-.ready {
-  color: #28a745;
-  font-weight: bold;
-}
-
-/* ヘッダーエリアとボタン */
-.header-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-.btn-cooltime {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 0.9em;
-}
-.btn-cooltime:hover {
-  background-color: #0056b3;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
@@ -94,7 +39,7 @@
   <div class="list">
     <div class="row header">
       <div>カテゴリー</div>
-      <div>残り時間（分）</div>
+      <div>残り時間</div>
       <div>受注開始時刻</div>
       <div>備考</div>
     </div>
@@ -168,7 +113,6 @@ function updateCurrentData() {
   crimeData[current].memo = inputMemo.value;
   
   if (minutesVal !== "" && !isNaN(minutesVal)) {
-    // 入力された分数から目標時刻（タイムスタンプ）を計算して保存
     const target = new Date(Date.now() + Number(minutesVal) * 60 * 1000);
     crimeData[current].targetTimestamp = target.getTime();
   } else {
@@ -269,7 +213,7 @@ function render() {
   });
 }
 
-// 入力イベント（分数の入力時に目標時刻を再計算して保存）
+// 入力イベント
 inputTime.addEventListener("input", updateCurrentData);
 inputMemo.addEventListener("input", updateCurrentData);
 

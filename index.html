@@ -42,46 +42,50 @@
 </head>
 <body>
 <div class="container">
-<h1>4時間後の時刻計算</h1>
-
-<div class="tabs" id="tabs"></div>
-
-<div class="input-area">
-  <div class="input-field">
-    <label for="time">犯罪終了時刻</label>
-    <input type="time" id="time">
+  <div class="header-nav">
+    <h1>4時間後の時刻計算</h1>
+    <!-- 犯罪可能時刻ボタン（index1.htmlへ遷移） -->
+    <a href="index1.html" class="btn-cooltime">犯罪可能時刻</a>
   </div>
 
-  <div class="arrow">↓</div>
-  <div class="result">
-    <div class="result-label">4時間後</div>
-    <div id="result">--:--</div>
-    <div class="countdown" id="countdown">残り時間：--:--:--</div>
+  <div class="tabs" id="tabs"></div>
+
+  <div class="input-area">
+    <div class="input-field">
+      <label for="time">犯罪終了時刻</label>
+      <input type="time" id="time">
+    </div>
+
+    <div class="arrow">↓</div>
+    <div class="result">
+      <div class="result-label">4時間後</div>
+      <div id="result">--:--</div>
+      <div class="countdown" id="countdown">残り時間：--:--:--</div>
+    </div>
+
+    <div class="input-field">
+      <label for="members">参加者</label>
+      <input type="text" id="members" placeholder="例: ぺこ、おひる、ゆう">
+    </div>
+
+    <div class="input-field">
+      <label for="memo">備考</label>
+      <input type="text" id="memo" placeholder="例: 即席傭兵チーム">
+    </div>
   </div>
 
-  <div class="input-field">
-    <label for="members">参加者</label>
-    <input type="text" id="members" placeholder="例: ぺこ、おひる、ゆう">
+  <h2>カテゴリー一覧</h2>
+  <div class="list">
+    <div class="row header">
+      <div>カテゴリー</div>
+      <div>犯罪終了時刻</div>
+      <div>4時間後</div>
+      <div>残り時間</div>
+      <div>参加者</div>
+      <div>備考</div>
+    </div>
+    <div id="rows"></div>
   </div>
-
-  <div class="input-field">
-    <label for="memo">備考</label>
-    <input type="text" id="memo" placeholder="例: 即席傭兵チーム">
-  </div>
-</div>
-
-<h2>カテゴリー一覧</h2>
-<div class="list">
-  <div class="row header">
-    <div>カテゴリー</div>
-    <div>犯罪終了時刻</div>
-    <div>4時間後</div>
-    <div>残り時間</div>
-    <div>参加者</div>
-    <div>備考</div>
-  </div>
-  <div id="rows"></div>
-</div>
 </div>
 
 <!-- Firebase SDK -->

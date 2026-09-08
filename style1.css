@@ -1,0 +1,208 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f1ec;
+  font-family: Arial, "Noto Sans JP", sans-serif;
+  padding: 20px 0;
+}
+
+.container {
+  width: min(95%, 760px);
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .1);
+}
+
+/* ヘッダー・ナビゲーション（タイトルとボタン） */
+.header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 25px;
+}
+
+.btn-cooltime {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #333;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.btn-cooltime:hover {
+  background-color: #555;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 10px 15px;
+  border: 0;
+  border-radius: 10px;
+  background: #e8e8e8;
+  color: #444;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: #333;
+  color: #fff;
+}
+
+.input-area {
+  max-width: 420px;
+  margin: 0 auto 28px;
+  text-align: center;
+}
+
+.input-field {
+  margin-top: 12px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+input[type=time],
+input[type=number],
+input[type=text] {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+input[type=number] {
+  font-size: 22px;
+  text-align: center;
+}
+
+.arrow {
+  margin: 12px 0;
+  font-size: 26px;
+}
+
+.result {
+  padding: 18px;
+  background: #f7f7f7;
+  border-radius: 15px;
+}
+
+.result-label {
+  font-size: 13px;
+  color: #777;
+}
+
+#result {
+  font-size: 40px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.countdown {
+  margin-top: 8px;
+  font-size: 15px;
+  color: #666;
+}
+
+.ready {
+  color: #28a745;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+}
+
+/* 一覧表（4列構成：カテゴリー、残り時間、受注開始時刻、備考） */
+.row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr 1.3fr;
+  gap: 8px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: #f7f7f7;
+}
+
+.row.header {
+  background: transparent;
+  font-size: 12px;
+  color: #888;
+  padding-bottom: 3px;
+}
+
+.row .name {
+  font-weight: bold;
+}
+
+.row .remaining,
+.row .after {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.row .memo {
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.empty {
+  color: #aaa;
+}
+
+@media(max-width:600px) {
+  .container {
+    padding: 20px 14px;
+  }
+  .header-nav {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .row.header {
+    display: none;
+  }
+  .row .remaining,
+  .row .after {
+    text-align: left;
+  }
+}

@@ -77,6 +77,29 @@ const result = document.getElementById("result");
 const countdown = document.getElementById("countdown");
 const rows = document.getElementById("rows");
 
+// ★正午自動リセット処理
+function checkNoonReset() {
+  const now = new Date();
+  
+  // 今日の日付文字列（YYYY-MM-DD）
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const lastResetDate = localStorage.getItem("lastNoonResetDate");
+
+  // 現在の時刻が 12:00 以降であり、かつ本日まだリセットを行っていない場合
+  if (now.getHours() >= 12 && lastResetDate !== todayStr) {
+    const emptyData = {};
+    categories.forEach(cat => {
+      emptyData[cat] = { minutes: "", targetTimestamp: null, memo: "" };
+    });
+
+    // Firebaseのデータをリセット
+    db.ref("crime_cooltimes").set(emptyData).then(() => {
+      // 本日のリセット完了日を記録
+      localStorage.setItem("lastNoonResetDate", todayStr);
+    });
+  }
+}
+
 // 2. データベースの更新をリアルタイム監視
 db.ref("crime_cooltimes").on("value", (snapshot) => {
   const val = snapshot.val() || {};
@@ -217,7 +240,12 @@ function render() {
 inputTime.addEventListener("input", updateCurrentData);
 inputMemo.addEventListener("input", updateCurrentData);
 
+// 初回判定
+checkNoonReset();
+
+// 定期実行（1秒ごと）
 setInterval(() => {
+  checkNoonReset(); // 正午リセット判定
   calculate();
   render();
 }, 1000);

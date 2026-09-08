@@ -9,22 +9,48 @@ body {
   justify-content: center;
   align-items: center;
   background: #f4f1ec;
-  width: 1420px;
+  width: 100%; /* ★1420px固定から100%に変更（崩れ防止） */
   font-family: Arial, "Noto Sans JP", sans-serif;
 }
 
 .container {
-  width: min(95%, 760px);
+  width: min(95%, 860px); /* ★6列表示に合わせて少し幅を広げました */
   padding: 28px;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .1);
 }
 
+/* ★追加: タイトルと遷移ボタンのレイアウト */
+.header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 h1 {
-  text-align: center;
-  margin: 0 0 22px;
-  font-size: 25px;
+  margin: 0;
+  font-size: 24px;
+}
+
+/* ★追加: ボタンデザイン */
+.btn-cooltime {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-cooltime:hover {
+  background-color: #0056b3;
 }
 
 .tabs {
@@ -109,9 +135,10 @@ h2 {
   gap: 8px;
 }
 
+/* ★修正: HTML側の6列に合わせてグリッド列数を変更 */
 .row {
   display: grid;
-  grid-template-columns: 1.2fr .9fr .9fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1.2fr 1.5fr 1.5fr;
   gap: 8px;
   align-items: center;
   padding: 11px 12px;
@@ -145,13 +172,18 @@ h2 {
   color: #aaa;
 }
 
+/* ★スマホ対応（画面幅600px以下）の最適化 */
 @media(max-width:600px) {
   .container {
     padding: 20px 14px;
   }
+  .header-nav {
+    flex-direction: column;
+    text-align: center;
+  }
   .row {
     grid-template-columns: 1fr 1fr;
-    gap: 5px;
+    gap: 8px;
   }
   .row.header {
     display: none;

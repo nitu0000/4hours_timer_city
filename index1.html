@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>受注開始時刻・クールタイム計算</title>
+<link rel="stylesheet" href="style1.css">
+<style>
+/* 備考入力等のスタイル */
+.input-field {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.input-field label {
+  font-size: 0.9em;
+  font-weight: bold;
+}
+.input-field input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 一覧表のレイアウト調整（4列構成） */
+.list .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 1.5fr;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 準備完了（0秒到達時）のスタイル強調 */
+.ready {
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* ヘッダーエリアとボタン */
+.header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.btn-cooltime {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.btn-cooltime:hover {
+  background-color: #0056b3;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-nav">
+    <h1>受注開始時刻計算</h1>
+    <!-- クールタイムボタン（index.htmlへ遷移） -->
+    <a href="index.html" class="btn-cooltime">クールタイム</a>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="input-area">
+    <div class="input-field">
+      <label for="time">残り時間（分）</label>
+      <input type="number" id="time" min="0" placeholder="例: 30">
+    </div>
+
+    <div class="arrow">↓</div>
+    <div class="result">
+      <div class="result-label">受注開始時刻</div>
+      <div id="result">--:--</div>
+      <div class="countdown" id="countdown">残り時間：--:--:--</div>
+    </div>
+
+    <div class="input-field">
+      <label for="memo">備考</label>
+      <input type="text" id="memo" placeholder="例: 即席傭兵チーム">
+    </div>
+  </div>
+
+  <h2>カテゴリー一覧</h2>
+  <div class="list">
+    <div class="row header">
+      <div>カテゴリー</div>
+      <div>残り時間（分）</div>
+      <div>受注開始時刻</div>
+      <div>備考</div>
+    </div>
+    <div id="rows"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// 1. Firebaseの初期化
+const firebaseConfig = {
+  apiKey: "AIzaSyBLSPd2ytS4Qtj37Kbu7Lib3QvwC5hYKEY",
+  authDomain: "crime-cooltime.firebaseapp.com",
+  projectId: "crime-cooltime",
+  storageBucket: "crime-cooltime.firebasestorage.app",
+  messagingSenderId: "192334293714",
+  appId: "1:192334293714:web:129619c62e6876c4419b0b",
+  measurementId: "G-70TY410B11"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const categories = ["飛行場","オイルリグ","客船","ヒューメイン","アーティファクト","パシフィック","ユニオン"];
+let crimeData = {};
+let current = "飛行場";
+
+const tabs = document.getElementById("tabs");
+const inputTime = document.getElementById("time");
+const inputMemo = document.getElementById("memo");
+const result = document.getElementById("result");
+const countdown = document.getElementById("countdown");
+const rows = document.getElementById("rows");
+
+// 2. データベースの更新をリアルタイム監視
+db.ref("crime_cooltimes").on("value", (snapshot) => {
+  const val = snapshot.val() || {};
+  
+  crimeData = {};
+  categories.forEach(cat => {
+    if (typeof val[cat] === 'object' && val[cat] !== null) {
+      crimeData[cat] = val[cat];
+    } else {
+      crimeData[cat] = { minutes: "", targetTimestamp: null, memo: "" };
+    }
+  });
+
+  const currentData = crimeData[current] || {};
+  if (document.activeElement !== inputTime) inputTime.value = currentData.minutes || "";
+  if (document.activeElement !== inputMemo) inputMemo.value = currentData.memo || "";
+
+  calculate();
+  render();
+});
+
+// 3. データをクラウドに保存する関数
+function saveData() {
+  db.ref("crime_cooltimes").set(crimeData);
+}
+
+function updateCurrentData() {
+  if (!crimeData[current]) {
+    crimeData[current] = {};
+  }
+  
+  const minutesVal = inputTime.value;
+  crimeData[current].minutes = minutesVal;
+  crimeData[current].memo = inputMemo.value;
+  
+  if (minutesVal !== "" && !isNaN(minutesVal)) {
+    // 入力された分数から目標時刻（タイムスタンプ）を計算して保存
+    const target = new Date(Date.now() + Number(minutesVal) * 60 * 1000);
+    crimeData[current].targetTimestamp = target.getTime();
+  } else {
+    crimeData[current].targetTimestamp = null;
+  }
+  
+  saveData();
+}
+
+// タブ生成処理
+categories.forEach((name, i) => {
+  const b = document.createElement("button");
+  b.className = "tab" + (i === 0 ? " active" : "");
+  b.textContent = name;
+  b.onclick = () => {
+    current = name;
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+
+    const item = crimeData[current] || { minutes: "", memo: "" };
+    inputTime.value = item.minutes || "";
+    inputMemo.value = item.memo || "";
+
+    calculate();
+    render();
+  };
+  tabs.appendChild(b);
+});
+
+// タイムスタンプから「HH:MM」形式の文字列を取得
+function formatTargetTime(timestamp) {
+  if (!timestamp) return "--:--";
+  const d = new Date(timestamp);
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
+// 残り時間（ミリ秒）を取得
+function getRemainingMs(timestamp) {
+  if (!timestamp) return null;
+  const diff = timestamp - Date.now();
+  return diff > 0 ? diff : 0;
+}
+
+// 残り時間の表示テキストと「実行可能」判定を返却
+function formatRemaining(timestamp) {
+  if (!timestamp) return { text: "--:--:--", isReady: false };
+  
+  const ms = getRemainingMs(timestamp);
+  if (ms === 0) {
+    return { text: "✓ 実行可能", isReady: true };
+  }
+  
+  const s = Math.floor(ms / 1000);
+  const text = String(Math.floor(s / 3600)).padStart(2, "0") + ":" +
+               String(Math.floor((s % 3600) / 60)).padStart(2, "0") + ":" +
+               String(s % 60).padStart(2, "0");
+               
+  return { text: text, isReady: false };
+}
+
+function calculate() {
+  const item = crimeData[current] || {};
+  const targetTimeStr = formatTargetTime(item.targetTimestamp);
+  result.textContent = targetTimeStr;
+  
+  if (item.targetTimestamp) {
+    const rem = formatRemaining(item.targetTimestamp);
+    countdown.textContent = rem.isReady ? "状態：" + rem.text : "残り時間：" + rem.text;
+    if (rem.isReady) {
+      countdown.classList.add("ready");
+    } else {
+      countdown.classList.remove("ready");
+    }
+  } else {
+    countdown.textContent = "残り時間：--:--:--";
+    countdown.classList.remove("ready");
+  }
+}
+
+function render() {
+  rows.innerHTML = "";
+  categories.forEach(name => {
+    const item = crimeData[name] || {};
+    const timestamp = item.targetTimestamp;
+    const memo = item.memo;
+    
+    const rem = formatRemaining(timestamp);
+
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="name">${name}</div>
+      <div class="remaining ${rem.isReady ? 'ready' : ''}">${timestamp ? rem.text : '<span class="empty">--:--:--</span>'}</div>
+      <div class="after">${timestamp ? formatTargetTime(timestamp) : '<span class="empty">--:--</span>'}</div>
+      <div class="memo">${memo || '<span class="empty">-</span>'}</div>
+    `;
+    rows.appendChild(row);
+  });
+}
+
+// 入力イベント（分数の入力時に目標時刻を再計算して保存）
+inputTime.addEventListener("input", updateCurrentData);
+inputMemo.addEventListener("input", updateCurrentData);
+
+setInterval(() => {
+  calculate();
+  render();
+}, 1000);
+</script>
+</body>
+</html>
